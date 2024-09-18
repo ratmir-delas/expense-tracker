@@ -1,6 +1,7 @@
 package com.example.tracker.model.user;
 
 import com.example.tracker.model.budget.BudgetUser;
+import com.example.tracker.model.token.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,9 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
 
     @OneToMany
     private Set<BudgetUser> budgets;
