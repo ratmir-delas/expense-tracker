@@ -1,4 +1,4 @@
-package com.example.tracker.model.auth;
+package com.example.tracker.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthenticationResponse {
+public class TokenRefreshResponse {
 
-    private String token;
+    private String accessToken;
+
+    private String refreshToken;
 
 }

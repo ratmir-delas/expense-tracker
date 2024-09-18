@@ -1,4 +1,4 @@
-package com.example.tracker.model.auth;
+package com.example.tracker.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
-
-    private String firstname;
-
-    private String lastname;
+public class AuthenticationRequest {
 
     private String email;
 

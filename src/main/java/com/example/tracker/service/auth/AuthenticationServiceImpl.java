@@ -1,8 +1,6 @@
-package com.example.tracker.service;
+package com.example.tracker.service.auth;
 
-import com.example.tracker.model.auth.AuthenticationRequest;
-import com.example.tracker.model.auth.AuthenticationResponse;
-import com.example.tracker.model.auth.RegisterRequest;
+import com.example.tracker.dto.auth.*;
 import com.example.tracker.model.token.Token;
 import com.example.tracker.model.token.TokenType;
 import com.example.tracker.model.user.Role;
@@ -27,6 +25,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
+        // Create a new user
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -34,17 +33,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
+        // Save the user and generate tokens
         var savedUser = userRepository.save(user);
-        var jwtToken = jwtService.generateToken(savedUser);
-        revokeAllUserTokens(savedUser);
-        saveUserToken(savedUser, jwtToken);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
+        return getAuthenticationResponse(savedUser);
     }
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        // Authenticate the user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -53,16 +49,47 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         );
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        var jwtToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, jwtToken);
+        return getAuthenticationResponse(user);
+    }
+
+    @Override
+    public TokenRefreshResponse refresh(TokenRefreshRequest request) {
+        // Validate the refresh token
+        String requestRefreshToken = request.getRefreshToken();
+        var refreshToken = tokenRepository.findByToken(requestRefreshToken)
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+        if (refreshToken.isRevoked() || refreshToken.isExpired()) {
+            throw new RuntimeException("Expired refresh token");
+        }
+
+        // Generate and save a new access token
+        var user = refreshToken.getUser();
+        var newAccessToken = jwtService.generateAccessToken(user);
+        revokeAccessTokens(user);
+        saveUserToken(user, newAccessToken, TokenType.ACCESS);
+
+        return TokenRefreshResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(requestRefreshToken)  // Return the same refresh token as it’s still valid
+                .build();
+    }
+
+    private AuthenticationResponse getAuthenticationResponse(User user) {
+        // Generate and save tokens
+        var jwtToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        revokeAccessTokens(user);
+        saveUserToken(user, jwtToken, TokenType.ACCESS);
+        saveUserToken(user, refreshToken, TokenType.REFRESH);
+        // Return the tokens
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
     private void revokeAllUserTokens(User user) {
-        var userTokens = tokenRepository.findAllByUserId(user.getId());
+        var userTokens = tokenRepository.findAllValidByUserId(user.getId());
         if (!userTokens.isEmpty()) {
             userTokens.forEach(token -> {
                 token.setExpired(true);
@@ -72,11 +99,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private void saveUserToken(User savedUser, String jwtToken) {
+    private void revokeAccessTokens(User user) {
+        var userTokens = tokenRepository.findAllValidAccessTokenByUserId(user.getId());
+        if (!userTokens.isEmpty()) {
+            userTokens.stream()
+                    .filter(token -> token.getType() == TokenType.ACCESS)
+                    .forEach(token -> {
+                        token.setExpired(true);
+                        token.setRevoked(true);
+                    });
+            tokenRepository.saveAll(userTokens);
+        }
+    }
+
+    private void saveUserToken(User savedUser, String jwtToken, TokenType tokenType) {
         var token = Token.builder()
                 .user(savedUser)
                 .token(jwtToken)
-                .type(TokenType.BEARER)
+                .type(tokenType)
                 .expired(false)
                 .revoked(false)
                 .build();

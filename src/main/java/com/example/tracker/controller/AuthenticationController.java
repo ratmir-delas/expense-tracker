@@ -1,9 +1,7 @@
 package com.example.tracker.controller;
 
-import com.example.tracker.model.auth.AuthenticationRequest;
-import com.example.tracker.model.auth.AuthenticationResponse;
-import com.example.tracker.model.auth.RegisterRequest;
-import com.example.tracker.service.AuthenticationService;
+import com.example.tracker.dto.auth.*;
+import com.example.tracker.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
@@ -26,5 +24,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenRefreshResponse> refresh(@RequestBody TokenRefreshRequest request) {
+        return ResponseEntity.ok(authenticationService.refresh(request));
     }
 }

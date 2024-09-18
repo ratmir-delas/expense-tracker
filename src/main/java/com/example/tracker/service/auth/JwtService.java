@@ -1,4 +1,4 @@
-package com.example.tracker.service;
+package com.example.tracker.service.auth;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,9 +12,11 @@ public interface JwtService {
 
     <T> T extractClaim(String token, Function<Claims, T> claimsResolver);
 
-    String generateToken(UserDetails userDetails);
+    String generateAccessToken(UserDetails userDetails);
 
-    String generateToken(Map<String, Object> extraClaims, UserDetails userDetails);
+    String generateRefreshToken(UserDetails userDetails);
+
+    String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, long expirationMillis);
 
     boolean isTokenValid(String token, UserDetails userDetails);
 

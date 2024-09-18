@@ -1,4 +1,4 @@
-package com.example.tracker.service;
+package com.example.tracker.service.auth;
 
 import com.example.tracker.repository.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;

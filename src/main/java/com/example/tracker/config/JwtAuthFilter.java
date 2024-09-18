@@ -1,7 +1,8 @@
 package com.example.tracker.config;
 
+import com.example.tracker.model.token.TokenType;
 import com.example.tracker.repository.TokenRepository;
-import com.example.tracker.service.JwtService;
+import com.example.tracker.service.auth.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,12 +54,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            var tokenOpt = tokenRepository.findByToken(jwt);
             var isTokenValid = tokenRepository.findByToken(jwt)
                     .map(token -> !token.isExpired() && !token.isRevoked())
                     .orElse(false);
 
-            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
-
+            if (tokenOpt.isPresent() && tokenOpt.get().getType() == TokenType.ACCESS && jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
                 // Create and set authentication token in SecurityContext
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -70,6 +71,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
+            } else if (tokenOpt.isPresent() && tokenOpt.get().getType() == TokenType.REFRESH) {
+                // Reject if a refresh token is being used in this context
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Refresh tokens cannot be used for accessing resources.");
+                return;
+            } else {
+                // Reject if the token is invalid
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid token.");
+                return;
             }
         }
 
