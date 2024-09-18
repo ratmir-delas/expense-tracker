@@ -11,7 +11,10 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Income extends Transaction {
+
+    private String source;
 
     @Override
     public String getType() {

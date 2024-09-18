@@ -9,11 +9,11 @@ public interface BudgetService {
 
     Budget createBudget(Budget budget);
 
-    Optional<Budget> getBudget(Long id);
+    Optional<Budget> getBudgetById(Long id);
 
     Collection<Budget> getAllBudgets(); // only for development
 
-    Collection<Budget> getBudgetsByUser(Long userId);
+    Collection<Budget> getBudgetsByUserId(Long userId);
 
     Optional<Budget> updateBudget(Long id, Budget budget);
 

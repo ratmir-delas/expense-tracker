@@ -24,7 +24,7 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public Optional<Budget> getBudget(Long id) {
+    public Optional<Budget> getBudgetById(Long id) {
         return budgetRepository.findById(id);
     }
 
@@ -34,7 +34,7 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public Collection<Budget> getBudgetsByUser(Long userId) {
+    public Collection<Budget> getBudgetsByUserId(Long userId) {
         return budgetRepository.findBudgetsByUsersId(userId);
     }
 
