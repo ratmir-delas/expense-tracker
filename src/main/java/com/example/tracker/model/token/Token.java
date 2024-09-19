@@ -23,8 +23,6 @@ public class Token {
     @Enumerated(EnumType.STRING)
     private TokenType type;
 
-    private boolean expired;
-
     private boolean revoked;
 
     @ManyToOne

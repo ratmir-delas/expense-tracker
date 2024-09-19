@@ -58,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String requestRefreshToken = request.getRefreshToken();
         var refreshToken = tokenRepository.findByToken(requestRefreshToken)
                 .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
-        if (refreshToken.isRevoked() || refreshToken.isExpired()) {
+        if (refreshToken.isRevoked()) {
             throw new RuntimeException("Expired refresh token");
         }
 
@@ -89,10 +89,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void revokeAllUserTokens(User user) {
-        var userTokens = tokenRepository.findAllValidByUserId(user.getId());
+        var userTokens = tokenRepository.findAllPermittedTokensByUserId(user.getId());
         if (!userTokens.isEmpty()) {
             userTokens.forEach(token -> {
-                token.setExpired(true);
                 token.setRevoked(true);
             });
             tokenRepository.saveAll(userTokens);
@@ -100,12 +99,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void revokeAccessTokens(User user) {
-        var userTokens = tokenRepository.findAllValidAccessTokenByUserId(user.getId());
+        var userTokens = tokenRepository.findAllActivePermittedTokensByUserId(user.getId());
         if (!userTokens.isEmpty()) {
             userTokens.stream()
                     .filter(token -> token.getType() == TokenType.ACCESS)
                     .forEach(token -> {
-                        token.setExpired(true);
                         token.setRevoked(true);
                     });
             tokenRepository.saveAll(userTokens);
@@ -117,7 +115,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .user(savedUser)
                 .token(jwtToken)
                 .type(tokenType)
-                .expired(false)
                 .revoked(false)
                 .build();
         tokenRepository.save(token);
