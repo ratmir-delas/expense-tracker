@@ -1,6 +1,6 @@
 package com.example.tracker.model.user;
 
-import com.example.tracker.model.budget.BudgetUser;
+import com.example.tracker.model.budget.BudgetAccess;
 import com.example.tracker.model.token.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -44,7 +44,7 @@ public class User implements UserDetails {
     private List<Token> tokens;
 
     @OneToMany
-    private Set<BudgetUser> budgets;
+    private Set<BudgetAccess> budgets;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

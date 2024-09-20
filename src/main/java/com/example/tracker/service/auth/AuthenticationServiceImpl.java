@@ -83,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         saveUserToken(user, refreshToken, TokenType.REFRESH);
         // Return the tokens
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(jwtToken)
                 .refreshToken(refreshToken)
                 .build();
     }
@@ -99,7 +99,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void revokeAccessTokens(User user) {
-        var userTokens = tokenRepository.findAllActivePermittedTokensByUserId(user.getId());
+        var userTokens = tokenRepository.findAllPermittedAccessTokensByUserId(user.getId());
         if (!userTokens.isEmpty()) {
             userTokens.stream()
                     .filter(token -> token.getType() == TokenType.ACCESS)

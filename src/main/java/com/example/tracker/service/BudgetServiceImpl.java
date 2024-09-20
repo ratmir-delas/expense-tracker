@@ -1,26 +1,28 @@
 package com.example.tracker.service;
 
 import com.example.tracker.model.budget.Budget;
+import com.example.tracker.model.budget.BudgetAccess;
+import com.example.tracker.model.budget.BudgetAccessLevel;
+import com.example.tracker.model.user.User;
+import com.example.tracker.repository.BudgetAccessRepository;
 import com.example.tracker.repository.BudgetRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
-
-    @Autowired
-    public BudgetServiceImpl(BudgetRepository budgetRepository) {
-        this.budgetRepository = budgetRepository;
-    }
+    private final BudgetAccessRepository budgetAccessRepository;
 
     @Override
-    public Budget createBudget(Budget budget) {
-        return budgetRepository.save(budget);
+    public Collection<Budget> getAllBudgets() {
+        return budgetRepository.findAll();
     }
 
     @Override
@@ -29,16 +31,30 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public Collection<Budget> getAllBudgets() {
-        return budgetRepository.findAll();
-    }
-
-    @Override
     public Collection<Budget> getBudgetsByUserId(Long userId) {
         return budgetRepository.findBudgetsByUsersId(userId);
     }
 
     @Override
+    public int getBudgetsCountByUserId(Long userId) {
+        return budgetRepository.countBudgetsByUsersId(userId);
+    }
+
+    @Override
+    @Transactional
+    public Budget createBudget(Budget budget, Long userId) {
+        var savedBudget = budgetRepository.save(budget);
+        BudgetAccess budgetAccess = BudgetAccess.builder()
+                .budget(savedBudget)
+                .user(User.builder().id(userId).build())
+                .accessLevel(BudgetAccessLevel.OWNER)
+                .build();
+        budgetAccessRepository.save(budgetAccess);
+        return savedBudget;
+    }
+
+    @Override
+    @Transactional
     public Optional<Budget> updateBudget(Long id, Budget budget) {
         return budgetRepository.findById(id)
                 .map(b -> {
@@ -49,11 +65,25 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional
     public boolean deleteBudget(Long id) {
         if (budgetRepository.existsById(id)) {
+            // Delete associated BudgetAccess entities
+            budgetAccessRepository.deleteByBudgetId(id);
+            // Delete the Budget entity
             budgetRepository.deleteById(id);
             return true;
         }
         return false;
     }
+
+    @Override
+    public boolean verifyAccess(Long budgetId, Long userId, BudgetAccessLevel requiredAccessLevel) {
+        BudgetAccess budgetAccess = budgetAccessRepository.findByBudgetIdAndUserId(budgetId, userId);
+        if (budgetAccess == null) {
+            return false;
+        }
+        return budgetAccess.getAccessLevel().ordinal() >= requiredAccessLevel.ordinal();
+    }
+
 }

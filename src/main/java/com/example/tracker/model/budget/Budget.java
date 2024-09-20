@@ -26,6 +26,6 @@ public class Budget {
     private Set<Category> categories;
 
     @OneToMany(fetch = FetchType.LAZY)
-    private Set<BudgetUser> users;
+    private Set<BudgetAccess> users;
 
 }

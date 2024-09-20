@@ -19,13 +19,11 @@ public class BudgetType {
     private Long id;
 
     private String name;  // e.g., "Personal", "Family", "Business", "Party Preparation"
+
     private String description;
-    private boolean allowsIncome;  // Determines if the template tracks income
-    private boolean allowsSharing; // Determines if the budget can be shared with others
 
-    @ElementCollection
-    private List<String> defaultCategories;  // Default spending categories for this template
+    private boolean allowsIncome;
 
-    // Additional fields for default limits, etc.
+    private boolean allowsSharing;
 
 }

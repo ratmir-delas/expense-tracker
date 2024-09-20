@@ -17,7 +17,7 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     List<Token> findAllPermittedTokensByUserId(Long userId);
 
     @Query("SELECT t FROM Token t WHERE t.user.id = :userId AND t.type = 'ACCESS' AND t.revoked = false")
-    List<Token> findAllActivePermittedTokensByUserId(Long userId);
+    List<Token> findAllPermittedAccessTokensByUserId(Long userId);
 
     Optional<Token> findByToken(String token);
 

@@ -3,13 +3,15 @@ package com.example.tracker.model.budget;
 import com.example.tracker.model.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class BudgetAccess {
 
     @Id
@@ -22,6 +24,7 @@ public class BudgetAccess {
     @ManyToOne
     private Budget budget;
 
-    private String accessLevel;  // "VIEW", "EDIT"
+    @Enumerated(EnumType.STRING)
+    private BudgetAccessLevel accessLevel;
 
 }
