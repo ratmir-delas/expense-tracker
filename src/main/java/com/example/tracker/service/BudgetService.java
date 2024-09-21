@@ -22,6 +22,6 @@ public interface BudgetService {
 
     boolean deleteBudget(Long id);
 
-    boolean verifyAccess(Long budgetId, Long userId, BudgetAccessLevel accessLevel);
+    boolean hasAccess(Long budgetId, Long userId, BudgetAccessLevel accessLevel);
 
 }

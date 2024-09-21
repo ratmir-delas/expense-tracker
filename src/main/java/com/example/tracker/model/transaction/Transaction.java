@@ -19,16 +19,15 @@ public abstract class Transaction {
 
     protected double amount;
 
+    protected String currency;
+
     protected Instant date;
 
     protected String description;
 
-    abstract String getType();
-
-    @ManyToOne
-    private Budget budget;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User createdBy;
+
+    abstract String getType();
 
 }

@@ -35,7 +35,7 @@ public class BudgetController {
                 .orElseThrow(() -> new IllegalArgumentException("Budget not found"));
         String token = TokenUtil.extractTokenFromRequest(request);
         Long userId = jwtService.extractUserId(token);
-        if (!budgetService.verifyAccess(budgetId, userId, BudgetAccessLevel.VIEWER)) {
+        if (!budgetService.hasAccess(budgetId, userId, BudgetAccessLevel.VIEWER)) {
             return ResponseEntity.status(403).build();
         }
         return ResponseEntity.ok(budget);
@@ -58,7 +58,7 @@ public class BudgetController {
     public ResponseEntity<Budget> updateBudget(@PathVariable Long budgetId, @Validated @RequestBody Budget budget, HttpServletRequest request) {
         String token = TokenUtil.extractTokenFromRequest(request);
         Long userId = jwtService.extractUserId(token);
-        if (!budgetService.verifyAccess(budgetId, userId, BudgetAccessLevel.EDITOR)) {
+        if (!budgetService.hasAccess(budgetId, userId, BudgetAccessLevel.EDITOR)) {
             return ResponseEntity.status(403).build();
         }
         Budget updatedBudget = budgetService.updateBudget(budgetId, budget)
@@ -70,7 +70,7 @@ public class BudgetController {
     public ResponseEntity<Void> deleteBudget(@PathVariable Long budgetId, HttpServletRequest request) {
         String token = TokenUtil.extractTokenFromRequest(request);
         Long userId = jwtService.extractUserId(token);
-        if (!budgetService.verifyAccess(budgetId, userId, BudgetAccessLevel.OWNER)) {
+        if (!budgetService.hasAccess(budgetId, userId, BudgetAccessLevel.OWNER)) {
             return ResponseEntity.status(403).build();
         }
         if (budgetService.deleteBudget(budgetId)) {

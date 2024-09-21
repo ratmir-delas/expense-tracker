@@ -78,7 +78,7 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public boolean verifyAccess(Long budgetId, Long userId, BudgetAccessLevel requiredAccessLevel) {
+    public boolean hasAccess(Long budgetId, Long userId, BudgetAccessLevel requiredAccessLevel) {
         BudgetAccess budgetAccess = budgetAccessRepository.findByBudgetIdAndUserId(budgetId, userId);
         if (budgetAccess == null) {
             return false;

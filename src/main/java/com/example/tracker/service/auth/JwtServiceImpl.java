@@ -23,8 +23,6 @@ public class JwtServiceImpl implements JwtService {
     private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 15; // 15 minutes
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 1 week
 
-
-
     @Override
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);

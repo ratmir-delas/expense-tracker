@@ -1,7 +1,6 @@
 package com.example.tracker.model.transaction;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
